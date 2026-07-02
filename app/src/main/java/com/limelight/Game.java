@@ -1069,11 +1069,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     protected void onPause() {
-        if (activeInstance == this) {
-            activeInstance = null;
-        }
-
         if (isFinishing()) {
+            if (activeInstance == this) {
+                activeInstance = null;
+            }
+
             // Stop any further input device notifications before we lose focus (and pointer capture)
             if (controllerHandler != null) {
                 controllerHandler.stop();
