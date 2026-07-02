@@ -6,6 +6,20 @@ import android.view.accessibility.AccessibilityEvent;
 
 public class KeyInterceptorService extends AccessibilityService {
 
+    public static volatile boolean isServiceRunning = false;
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        isServiceRunning = true;
+    }
+
+    @Override
+    public void onDestroy() {
+        isServiceRunning = false;
+        super.onDestroy();
+    }
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         // We do not need to handle accessibility events
@@ -18,6 +32,11 @@ public class KeyInterceptorService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
+        android.content.SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
+        if (!prefs.getBoolean("checkbox_keyboard_interceptor", false)) {
+            return super.onKeyEvent(event);
+        }
+
         Game game = Game.activeInstance;
         if (game != null && game.isInputGrabbed()) {
             int keyCode = event.getKeyCode();

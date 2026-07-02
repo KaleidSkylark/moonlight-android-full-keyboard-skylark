@@ -739,7 +739,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // We can't guarantee the state of modifiers keys which may have
         // lifted while focus was not on us. Clear the modifier state.
-        this.modifierFlags = 0;
+        if (!KeyInterceptorService.isServiceRunning || !prefConfig.keyboardInterceptor) {
+            this.modifierFlags = 0;
+        }
 
         // With Android native pointer capture, capture is lost when focus is lost,
         // so it must be requested again when focus is regained.
@@ -1330,6 +1332,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (KeyInterceptorService.isServiceRunning && prefConfig.keyboardInterceptor) {
+            if ((event.getSource() & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
+                return true;
+            }
+        }
         return handleKeyDown(event) || super.onKeyDown(keyCode, event);
     }
 
@@ -1412,6 +1419,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (KeyInterceptorService.isServiceRunning && prefConfig.keyboardInterceptor) {
+            if ((event.getSource() & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
+                return true;
+            }
+        }
         return handleKeyUp(event) || super.onKeyUp(keyCode, event);
     }
 
