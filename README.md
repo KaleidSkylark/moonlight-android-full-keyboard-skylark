@@ -12,6 +12,7 @@ It is specifically patched to support the **full capability of external/bluetoot
 * **Guided Accessibility Service**: Integrated a new `KeyInterceptorService` (Accessibility Service) that grabs system-level hardware keyboard shortcuts and forwards them directly to the active Moonlight game stream before the Android system can intercept them.
 * **Momentary Release & Rapid Spam Fix**: Fixed a focus-loss bug where spamming `Tab` (while holding `Alt`) would cause the switcher on the PC to close early. Ignored synthetic system-dispatched key releases and preserved modifier keys state during focus shifts.
 * **Memory & Performance Optimizations**: Cached preference checks in memory to ensure key interception runs with sub-millisecond latency (preventing Android accessibility service timeouts).
+* **Crash-Proofing & Null Safety**: Wrapped the Accessibility Service's input pipeline in try-catch blocks to prevent system-level service disablerecovery triggers, added safe `conn` checks before JNI transmissions, and added an active start-up warning Toast to notify the user if the service has been killed by aggressive battery management.
 * **Settings Toggle UI**: Added a toggle switch **"Intercept system key shortcuts"** in the Moonlight settings menu under **Input settings** that guides the user to the Accessibility settings (with helpful bypass instructions for Xiaomi/Poco/Redmi "Restricted settings" sideload policy).
 * **Application Renaming**: Renamed the application name to **Moonlight Skylark**.
 
