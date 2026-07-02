@@ -20,7 +20,7 @@ It is specifically patched to support the **full capability of external/bluetoot
 ## How to Install / Build
 
 ### Method 1: Downloading from the Releases tab
-* Go to the [Releases](https://github.com/KaleidSkylark/moonlight-android/releases) tab in this repository.
+* Go to the [Releases](https://github.com/KaleidSkylark/moonlight-android-full-keyboard-skylark/releases) tab in this repository.
 * Download the compiled `app-nonRoot-debug.apk` or any other packaged release.
 * Install it on your Android device.
 * *Note:* If you receive a *"Restricted setting: For your security, this setting is currently unavailable"* prompt when enabling the Accessibility Service:
