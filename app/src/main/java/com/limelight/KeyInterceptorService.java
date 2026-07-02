@@ -3,10 +3,30 @@ package com.limelight;
 import android.accessibilityservice.AccessibilityService;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class KeyInterceptorService extends AccessibilityService {
 
     public static volatile boolean isServiceRunning = false;
+    private boolean isInterceptorEnabled = false;
+    private SharedPreferences.OnSharedPreferenceChangeListener listener;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        isInterceptorEnabled = prefs.getBoolean("checkbox_keyboard_interceptor", false);
+        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if ("checkbox_keyboard_interceptor".equals(key)) {
+                    isInterceptorEnabled = sharedPreferences.getBoolean(key, false);
+                }
+            }
+        };
+        prefs.registerOnSharedPreferenceChangeListener(listener);
+    }
 
     @Override
     protected void onServiceConnected() {
@@ -17,6 +37,10 @@ public class KeyInterceptorService extends AccessibilityService {
     @Override
     public void onDestroy() {
         isServiceRunning = false;
+        if (listener != null) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            prefs.unregisterOnSharedPreferenceChangeListener(listener);
+        }
         super.onDestroy();
     }
 
@@ -32,8 +56,7 @@ public class KeyInterceptorService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
-        android.content.SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
-        if (!prefs.getBoolean("checkbox_keyboard_interceptor", false)) {
+        if (!isInterceptorEnabled) {
             return super.onKeyEvent(event);
         }
 

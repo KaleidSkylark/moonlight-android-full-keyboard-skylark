@@ -1330,10 +1330,29 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
     }
 
+    private boolean isKeyboardKey(int keyCode) {
+        // Exclude gamepad buttons
+        if (keyCode >= KeyEvent.KEYCODE_BUTTON_A && keyCode <= KeyEvent.KEYCODE_BUTTON_16) return false;
+        if (keyCode >= KeyEvent.KEYCODE_BUTTON_L1 && keyCode <= KeyEvent.KEYCODE_BUTTON_MODE) return false;
+        if (keyCode >= KeyEvent.KEYCODE_DPAD_UP && keyCode <= KeyEvent.KEYCODE_DPAD_CENTER) return false;
+        
+        // Exclude system keys that the service does not consume
+        if (keyCode == KeyEvent.KEYCODE_POWER ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
+            keyCode == KeyEvent.KEYCODE_HOME ||
+            keyCode == KeyEvent.KEYCODE_BACK) {
+            return false;
+        }
+        
+        return true;
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (KeyInterceptorService.isServiceRunning && prefConfig.keyboardInterceptor) {
-            if ((event.getSource() & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
+            if (isKeyboardKey(keyCode)) {
                 return true;
             }
         }
@@ -1420,7 +1439,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (KeyInterceptorService.isServiceRunning && prefConfig.keyboardInterceptor) {
-            if ((event.getSource() & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
+            if (isKeyboardKey(keyCode)) {
                 return true;
             }
         }
