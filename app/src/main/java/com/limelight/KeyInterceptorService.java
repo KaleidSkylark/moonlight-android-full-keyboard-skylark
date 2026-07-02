@@ -9,23 +9,12 @@ import android.preference.PreferenceManager;
 public class KeyInterceptorService extends AccessibilityService {
 
     public static volatile boolean isServiceRunning = false;
-    private boolean isInterceptorEnabled = false;
-    private SharedPreferences.OnSharedPreferenceChangeListener listener;
+    private SharedPreferences prefs;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        isInterceptorEnabled = prefs.getBoolean("checkbox_keyboard_interceptor", false);
-        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if ("checkbox_keyboard_interceptor".equals(key)) {
-                    isInterceptorEnabled = sharedPreferences.getBoolean(key, false);
-                }
-            }
-        };
-        prefs.registerOnSharedPreferenceChangeListener(listener);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -37,10 +26,6 @@ public class KeyInterceptorService extends AccessibilityService {
     @Override
     public void onDestroy() {
         isServiceRunning = false;
-        if (listener != null) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            prefs.unregisterOnSharedPreferenceChangeListener(listener);
-        }
         super.onDestroy();
     }
 
@@ -56,27 +41,34 @@ public class KeyInterceptorService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
-        if (!isInterceptorEnabled) {
-            return super.onKeyEvent(event);
-        }
-
-        Game game = Game.activeInstance;
-        if (game != null && game.isInputGrabbed()) {
-            int keyCode = event.getKeyCode();
-            
-            // Exclude power, volume, and system navigation keys (Home, Back)
-            if (keyCode == KeyEvent.KEYCODE_POWER ||
-                keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
-                keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
-                keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
-                keyCode == KeyEvent.KEYCODE_HOME ||
-                keyCode == KeyEvent.KEYCODE_BACK) {
+        try {
+            if (prefs == null) {
+                prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            }
+            if (!prefs.getBoolean("checkbox_keyboard_interceptor", false)) {
                 return super.onKeyEvent(event);
             }
 
-            // Forward the event to the active Game activity
-            game.handleAccessibilityKeyEvent(event);
-            return true; // Consume the event so Android OS does not handle it
+            Game game = Game.activeInstance;
+            if (game != null && game.isSessionActive()) {
+                int keyCode = event.getKeyCode();
+                
+                // Exclude power, volume, and system navigation keys (Home, Back)
+                if (keyCode == KeyEvent.KEYCODE_POWER ||
+                    keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+                    keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+                    keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
+                    keyCode == KeyEvent.KEYCODE_HOME ||
+                    keyCode == KeyEvent.KEYCODE_BACK) {
+                    return super.onKeyEvent(event);
+                }
+
+                // Forward the event to the active Game activity
+                game.handleAccessibilityKeyEvent(event);
+                return true; // Consume the event so Android OS does not handle it
+            }
+        } catch (Exception e) {
+            // Prevent accessibility service from crashing and disabling itself
         }
         return super.onKeyEvent(event);
     }

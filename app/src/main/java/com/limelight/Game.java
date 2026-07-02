@@ -1065,6 +1065,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     protected void onResume() {
         super.onResume();
         activeInstance = this;
+
+        if (prefConfig.keyboardInterceptor && !KeyInterceptorService.isServiceRunning) {
+            Toast.makeText(this, "Warning: Keyboard Interceptor is enabled in settings, but the Accessibility Service is not running. Please toggle it off/on in system Accessibility Settings.", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -1322,7 +1326,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return grabbedInput;
     }
 
+    public boolean isSessionActive() {
+        return grabbedInput && conn != null;
+    }
+
     public void handleAccessibilityKeyEvent(KeyEvent event) {
+        if (conn == null) {
+            return;
+        }
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             handleKeyDown(event);
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
@@ -1377,7 +1388,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             // Send the right mouse button event if mouse back and forward
             // are disabled. If they are enabled, handleMotionEvent() will take
             // care of this.
-            if (!prefConfig.mouseNavButtons) {
+            if (!prefConfig.mouseNavButtons && conn != null) {
                 conn.sendMouseButtonDown(MouseButtonPacket.BUTTON_RIGHT);
             }
 
@@ -1417,7 +1428,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 // UTF-8 events don't auto-repeat on the host side.
                 int unicodeChar = event.getUnicodeChar();
                 if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) == 0 && (unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK) != 0) {
-                    conn.sendUtf8Text(""+(char)unicodeChar);
+                    if (conn != null) {
+                        conn.sendUtf8Text(""+(char)unicodeChar);
+                    }
                     return true;
                 }
 
@@ -1429,8 +1442,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return true;
             }
 
-            conn.sendKeyboardInput(translated, KeyboardPacket.KEY_DOWN, getModifierState(event),
-                    keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
+            if (conn != null) {
+                conn.sendKeyboardInput(translated, KeyboardPacket.KEY_DOWN, getModifierState(event),
+                        keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
+            }
         }
 
         return true;
@@ -1498,8 +1513,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return (unicodeChar & KeyCharacterMap.COMBINING_ACCENT) == 0 && (unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK) != 0;
             }
 
-            conn.sendKeyboardInput(translated, KeyboardPacket.KEY_UP, getModifierState(event),
-                    keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
+            if (conn != null) {
+                conn.sendKeyboardInput(translated, KeyboardPacket.KEY_UP, getModifierState(event),
+                        keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
+            }
         }
 
         return true;
