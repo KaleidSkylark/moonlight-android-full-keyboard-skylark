@@ -28,9 +28,15 @@ It is specifically patched to support the **full capability of external/bluetoot
   2. Tap the three dots (⋮) in the top-right corner.
   3. Select **Allow restricted settings**, then return to Accessibility settings to turn it on.
 
-### Method 2: Sideloading via Forking & GitHub Actions (Android CLI Workflow)
+### Method 2: Downloading pre-compiled APKs from GitHub Actions
+* Go to the **Actions** tab of this repository.
+* Click on the latest run under the **Android CI** workflow list.
+* Scroll down to the **Artifacts** section at the bottom of the page and download `Moonlight-Skylark-Apk` (you must be logged into GitHub to download artifacts).
+* Unzip and install it.
+
+### Method 3: Running the build in your own fork
 * Fork this repository to your own GitHub account.
-* The GitHub Action will compile and build the APK using the Android CLI workflow automatically when a push occurs, or you can trigger it manually, allowing you to download the artifact directly from your workflow runs.
+* The GitHub Action will compile and build the APK using the Android CLI workflow automatically when a push occurs, or you can trigger it manually, allowing you to download the artifact directly from your own workflow runs.
 
 ---
 
