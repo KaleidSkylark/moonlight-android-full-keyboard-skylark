@@ -181,6 +181,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_APP_HDR = "HDR";
     public static final String EXTRA_SERVER_CERT = "ServerCert";
 
+    public static volatile Game activeInstance = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -1027,6 +1029,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     protected void onDestroy() {
+        if (activeInstance == this) {
+            activeInstance = null;
+        }
+
         super.onDestroy();
 
         if (controllerHandler != null) {
@@ -1054,7 +1060,17 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        activeInstance = this;
+    }
+
+    @Override
     protected void onPause() {
+        if (activeInstance == this) {
+            activeInstance = null;
+        }
+
         if (isFinishing()) {
             // Stop any further input device notifications before we lose focus (and pointer capture)
             if (controllerHandler != null) {
@@ -1298,6 +1314,18 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private byte getModifierState() {
         return (byte) modifierFlags;
+    }
+
+    public boolean isInputGrabbed() {
+        return grabbedInput;
+    }
+
+    public void handleAccessibilityKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            handleKeyDown(event);
+        } else if (event.getAction() == KeyEvent.ACTION_UP) {
+            handleKeyUp(event);
+        }
     }
 
     @Override

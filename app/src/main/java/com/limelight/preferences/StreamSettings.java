@@ -30,6 +30,7 @@ import android.view.WindowInsets;
 import com.limelight.LimeLog;
 import com.limelight.PcView;
 import com.limelight.R;
+import com.limelight.KeyInterceptorService;
 import com.limelight.binding.video.MediaCodecHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.UiHelper;
@@ -276,6 +277,22 @@ public class StreamSettings extends Activity {
 
             addPreferencesFromResource(R.xml.preferences);
             PreferenceScreen screen = getPreferenceScreen();
+
+            CheckBoxPreference keyboardInterceptorPref = (CheckBoxPreference) findPreference("checkbox_keyboard_interceptor");
+            if (keyboardInterceptorPref != null) {
+                keyboardInterceptorPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                    @Override
+                    public boolean onPreferenceChange(Preference preference, Object newValue) {
+                        boolean enabled = (Boolean) newValue;
+                        if (enabled) {
+                            if (!isAccessibilityServiceEnabled(getActivity())) {
+                                showAccessibilityDialog();
+                            }
+                        }
+                        return true;
+                    }
+                });
+            }
 
             // hide on-screen controls category on non touch screen devices
             if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
@@ -667,6 +684,55 @@ public class StreamSettings extends Activity {
                     return true;
                 }
             });
+        }
+
+        private boolean isAccessibilityServiceEnabled(Context context) {
+            String service = context.getPackageName() + "/" + KeyInterceptorService.class.getName();
+            int accessibilityEnabled = 0;
+            try {
+                accessibilityEnabled = android.provider.Settings.Secure.getInt(
+                        context.getContentResolver(),
+                        android.provider.Settings.Secure.ACCESSIBILITY_ENABLED);
+            } catch (android.provider.Settings.SettingNotFoundException e) {
+                // Ignored
+            }
+
+            android.text.TextUtils.SimpleStringSplitter colonSplitter = new android.text.TextUtils.SimpleStringSplitter(':');
+
+            if (accessibilityEnabled == 1) {
+                String settingValue = android.provider.Settings.Secure.getString(
+                        context.getContentResolver(),
+                        android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+                if (settingValue != null) {
+                    colonSplitter.setString(settingValue);
+                    while (colonSplitter.hasNext()) {
+                        String accessibilityService = colonSplitter.next();
+                        if (accessibilityService.equalsIgnoreCase(service)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void showAccessibilityDialog() {
+            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.accessibility_dialog_title);
+            builder.setMessage(R.string.accessibility_dialog_message);
+            builder.setPositiveButton(R.string.accessibility_dialog_button_settings, new android.content.DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(android.content.DialogInterface dialog, int which) {
+                    try {
+                        Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        android.widget.Toast.makeText(getActivity(), "Unable to open Accessibility Settings", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            builder.setNegativeButton(R.string.no, null);
+            builder.show();
         }
     }
 }

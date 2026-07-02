@@ -1,0 +1,41 @@
+package com.limelight;
+
+import android.accessibilityservice.AccessibilityService;
+import android.view.KeyEvent;
+import android.view.accessibility.AccessibilityEvent;
+
+public class KeyInterceptorService extends AccessibilityService {
+
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        // We do not need to handle accessibility events
+    }
+
+    @Override
+    public void onInterrupt() {
+        // We do not need to handle interrupts
+    }
+
+    @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        Game game = Game.activeInstance;
+        if (game != null && game.isInputGrabbed()) {
+            int keyCode = event.getKeyCode();
+            
+            // Exclude power, volume, and system navigation keys (Home, Back)
+            if (keyCode == KeyEvent.KEYCODE_POWER ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
+                keyCode == KeyEvent.KEYCODE_HOME ||
+                keyCode == KeyEvent.KEYCODE_BACK) {
+                return super.onKeyEvent(event);
+            }
+
+            // Forward the event to the active Game activity
+            game.handleAccessibilityKeyEvent(event);
+            return true; // Consume the event so Android OS does not handle it
+        }
+        return super.onKeyEvent(event);
+    }
+}

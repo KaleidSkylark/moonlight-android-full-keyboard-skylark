@@ -177,6 +177,20 @@
             android:name=".binding.input.driver.UsbDriverService"
             android:label="Usb Driver Service" />
 
+        <service
+            android:name=".KeyInterceptorService"
+            android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/keyboard_interceptor_service_config" />
+        </service>
+
+
         <activity
             android:name=".HelpActivity"
             android:resizeableActivity="true"

@@ -300,4 +300,14 @@
     <string name="analogscroll_none">None (both sticks move the mouse)</string>
     <string name="analogscroll_right">Right analog stick</string>
     <string name="analogscroll_left">Left analog stick</string>
+
+    <!-- Accessibility Service Strings -->
+    <string name="accessibility_service_label">Moonlight Keyboard Interceptor</string>
+    <string name="accessibility_service_desc">Enables Moonlight to intercept system-level keyboard shortcuts (such as Alt+Tab, Windows key, Ctrl+Shift+Esc, Alt+F4, and Win+D) and send them to the streamed PC.</string>
+    <string name="title_checkbox_keyboard_interceptor">Intercept system key shortcuts</string>
+    <string name="summary_checkbox_keyboard_interceptor">Intercept system shortcuts (Alt+Tab, Win, Ctrl+Shift+Esc, etc.) and forward them to the stream. Requires enabling the Moonlight Keyboard Interceptor in accessibility settings.</string>
+    <string name="accessibility_dialog_title">Enable Accessibility Service</string>
+    <string name="accessibility_dialog_message">To intercept system key shortcuts, you must enable the Moonlight Keyboard Interceptor under accessibility settings.\n\nNote: Sideloaded apps on Android 13+ or MIUI/HyperOS might show a \"Restricted setting\" error when enabling it. To bypass it, go to App Info -> three dots -> Allow restricted settings, then enable it.</string>
+    <string name="accessibility_dialog_button_settings">Open Settings</string>
 </resources>
+
