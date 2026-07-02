@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 public class KeyInterceptorService extends AccessibilityService {
 
     public static volatile boolean isServiceRunning = false;
+    public static volatile KeyInterceptorService instance = null;
     private SharedPreferences prefs;
 
     @Override
@@ -21,12 +22,34 @@ public class KeyInterceptorService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         isServiceRunning = true;
+        instance = this;
+
+        // Disable key filtering by default on start unless a game session is active
+        Game game = Game.activeInstance;
+        updateKeyFiltering(game != null && game.isSessionActive());
     }
 
     @Override
     public void onDestroy() {
         isServiceRunning = false;
+        instance = null;
         super.onDestroy();
+    }
+
+    public void updateKeyFiltering(boolean enable) {
+        try {
+            android.accessibilityservice.AccessibilityServiceInfo info = getServiceInfo();
+            if (info != null) {
+                if (enable) {
+                    info.flags |= android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+                } else {
+                    info.flags &= ~android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+                }
+                setServiceInfo(info);
+            }
+        } catch (Exception e) {
+            // Safe catch
+        }
     }
 
     @Override

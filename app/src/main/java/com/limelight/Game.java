@@ -1031,6 +1031,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     protected void onDestroy() {
+        if (KeyInterceptorService.instance != null) {
+            KeyInterceptorService.instance.updateKeyFiltering(false);
+        }
+
         if (activeInstance == this) {
             activeInstance = null;
         }
@@ -1069,6 +1073,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         if (prefConfig.keyboardInterceptor && !KeyInterceptorService.isServiceRunning) {
             Toast.makeText(this, "Warning: Keyboard Interceptor is enabled in settings, but the Accessibility Service is not running. Please toggle it off/on in system Accessibility Settings.", Toast.LENGTH_LONG).show();
         }
+
+        // Enable key filtering when stream begins
+        if (prefConfig.keyboardInterceptor && KeyInterceptorService.instance != null) {
+            KeyInterceptorService.instance.updateKeyFiltering(true);
+        }
     }
 
     @Override
@@ -1092,6 +1101,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     protected void onStop() {
+        if (KeyInterceptorService.instance != null) {
+            KeyInterceptorService.instance.updateKeyFiltering(false);
+        }
+
         super.onStop();
 
         SpinnerDialog.closeDialogs(this);
